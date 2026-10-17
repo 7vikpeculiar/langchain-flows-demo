@@ -1,49 +1,39 @@
-# LangChain flows — live demo scripts
+# AI agents tutorial (LangChain + Ollama)
 
-Standalone demos for **Part 2: LangChain flows** (12 slides) plus a break slide. Snippets are distilled from the Agentic-AI-Systems workshop repo: LangGraph hello graph, chain workflow, `with_structured_output`, and the evaluator–optimizer loop.
-
-One running example: a support ticket for **order #4821**.
-
-## Slides → scripts
-
-See [SLIDES.md](./SLIDES.md) for talking points and diagrams.
-
-| Demo | Command |
-|---|---|
-| Step 1 — single node | `python scripts/01_single_node.py` |
-| Step 2 — chain | `python scripts/02_chain.py` |
-| Why structured output | `python scripts/03_structured_why.py` |
-| Pydantic schema | `python scripts/04_structured_schema.py` |
-| JSON between nodes + tools | `python scripts/05_structured_between_nodes.py` |
-| Step 3 — loop | `python scripts/06_loop.py` |
-| Recap | `python scripts/07_recap.py` |
-
-`01_single_node.py` needs no API key. The rest call OpenAI.
+Small scripts for a college workshop. `scripts/common.py` defines `ChatGptModel()` — slides say ChatGPT, it runs **Ollama** locally. In the LangGraph scripts, set `LOG_GRAPH = True` at the top of the file for per-node traces.
 
 ## Setup
 
+Use the **testingo** pyenv env (or any env with the packages below):
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+pyenv activate testingo
 pip install -r requirements.txt
-cp .env.example .env   # then set OPENAI_API_KEY
+ollama pull llama3.1:8b   # must match scripts/common.py
 ```
 
-Run from the repo root so `scripts/common.py` imports cleanly:
+Run from the repo root:
 
 ```bash
-PYTHONPATH=scripts python scripts/02_chain.py
+python scripts/01_chat_model.py
+python scripts/02_bind_tools.py
+python scripts/03_model_chaining_inefficient.py
+python scripts/03_model_chaining_graph.py
+python scripts/04_loop_review.py
+python scripts/05_memory.py first
+python scripts/05_memory.py followup
+python scripts/05_memory.py reset    # clear tickets.db
+python scripts/06_validators.py      # Agno post_hooks + @validator helpers
 ```
 
-Or:
-
-```bash
-cd scripts && python 02_chain.py
-```
-
-## Live-demo tips
-
-1. Keep `.env` loaded; don’t paste keys into the terminal.
-2. `01` first (no network) to show the graph shape.
-3. `03` then `04` back-to-back so “prompted JSON” vs “schema JSON” is obvious.
-4. `06` is the longest (up to 3 generate/evaluate turns).
+| Script | What it shows |
+|--------|----------------|
+| `01_chat_model.py` | `ChatGptModel()` + `invoke` |
+| `02_bind_tools.py` | `@tool` + `bind_tools` |
+| `03_model_chaining_inefficient.py` | Two `invoke` calls — triage → reply |
+| `03_model_chaining_graph.py` | Same chain as LangGraph nodes |
+| `04_loop_review.py` | AI review loop until approved (writes `scripts/output/loop_review.png`) |
+| `05_memory.py` | Same loop + SQLite memory across runs (`scripts/output/memory_graph.png`) |
+| `06_validators.py` | Agno agent + Python validators (`post_hooks`, no LLM reviewer) |
+| `02_bind_tools_underlying.py` | Manual tool loop (how agents run tools) |
+| `take_home.py` | Take-home exercise (DFA with agents) |
